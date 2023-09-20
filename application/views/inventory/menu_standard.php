@@ -90,9 +90,6 @@
 <li><?=anchor('customer_type','Price By CustomerType','class="info_link link2"');?></li>
 <li><?=anchor('project/project','Project Code','class="info_link link2"');?></li>
 <li>
-	<a href="#" onclick="add_tab_parent_test('Print Barcode','inventory/browse');">Print Barcode Multi</a>
-</li>
-<li>
 	<a href="#" onclick="add_tab_parent_test('Inventory','inventory/browse');">Test New Tab</a>
 </li>
 					</ul>

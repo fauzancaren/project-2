@@ -114,17 +114,12 @@ if(isset($sub_controller)){
 	if(isset($posting_visible)){
 		echo link_button('Posting','posting_'.$controller_name."();return false;",'save');
 	};
-
 	echo link_button('Filter','dlgFilter_'.$controller_name.'_Show();return false;','filter');
 	if(isset($print_visible)){
 		if($print_visible){
-			echo link_button('Print All','print_'.$controller_name."();return false;",'print');
+			echo link_button('','print_'.$controller_name."();return false;",'print');
 		}
 	}	
-
-	if($controller_name == "inventory"){
-		echo link_button('Barcode','barcode_'.$controller_name."();return false;",'print');
-	};
 	//echo link_button('','cari_'.$controller_name."();return false;",'reload');
 		
 	if(isset($other_button)){
@@ -371,14 +366,6 @@ if(isset($view_file)){
         if (filter != '')xurl_add=xurl_add+'?filter='+filter;
 		add_tab_parent("addnew_<?=$controller_name?>",xurl_add);
     };
-		
-    function barcode_<?=$controller_name?>(){
-        loading();
-        xurl_add=CI_ROOT+CI_CONTROL+'<?=$sub_slash?>/barcode';
-        if (filter != '')xurl_add=xurl_add+'?filter='+filter;
-		add_tab_parent("Print_barcode_<?=$controller_name?>",xurl_add);
-    };
-
     function edit_<?=$controller_name?>(){
 		loading();
 		
