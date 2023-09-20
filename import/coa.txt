@@ -1,0 +1,209 @@
+KODE	ACCOUNT	JENIS	TYPE	GROUP	DBCR	SALDO
+1	Aktiva	T	1		0	
+10	  Aktiva Lancar	H	1		0	
+100000	  Kas Besar	D	1	10	0	
+100001	  Kas Kecil	D	1	10	0	
+100002	  Kas USD	D	1	10	0	
+100101	  Bank SUMSEL 151096033	D	1	10	0	
+100102	  Ayat Silang Bank/Bank	D	1	10	0	
+100103	  Ayat Silang Kas/Bank	D	1	10	0	
+100104	  Ayat Silang Kas/Bank	D	1	10	0	
+100105	  BCA 3000588503	D	1	10	0	
+100106	  BNI 3334440011	D	1	10	0	
+100107	  MANDIRI 1120060639999	D	1	10	0	
+100108	  BRI 018401000367561	D	1	10	0	
+100109	  MANDIRI PROMOSI 1120014798891	D	1	10	0	
+100201	  Deposito	D	1	10	0	
+115505	  Uang Muka Proyek	D	1	10	0	
+115601	  Beban dibayar dimuka	D	1	10	0	
+115602	  Sewa Bangunan Dibayar Dimuka	D	1	10	0	
+115603	  Uang Muka Pembelian	D	1	10	0	
+115604	  Asuransi Dibayar Dimuka	D	1	10	0	
+115605	  Uang Muka Penjualan	D	1	10	0	
+115606	  Cadangan Kerugian Piutang	D	1	10	0	
+11	    Piutang Dagang	H	1		0	
+111000	      Piutang Usaha	D	1	11	0	
+111002	      Piutang Dagang	D	1	11	0	
+12	    Piutang Karyawan	H	1		0	
+112001	      Piutang Kryawan A	D	1	11	0	
+112002	      Piutang Karyawan B	D	1	11	0	
+13	    Piutang Sekutu	D	1		0	
+113001	      Piutang A	D	1	13	0	
+113002	      Piutang Michael	D	1	13	0	
+14	    Persediaan	D	1		0	
+114001	      Persediaan	D	1	14	0	
+15	    Uang Muka Pajak	D	1		0	
+115001	      UM PPh 22	D	1	15	0	
+115002	      UM PPh 23	D	1	15	0	
+115003	      UM PPh 25	D	1	15	0	
+115004	      PPN Masukan	D	1	15	0	
+116	  Aktiva Tetap	H	1		0	
+116001	  Tanah	D	1	116	0	
+116002	  Peralatan Kantor	D	1	116	0	
+116003	  Kendaraan	D	1	116	0	
+116004	  Mesin	D	1	116	0	
+116005	  Bangunan	D	1	116	0	
+116006	  Inventaris Kantor	D	1	116	0	
+116007	  Peralatan Depo	D	1	116	0	
+117	    Akumulasi Penyusutan Aktiva	H	1		0	
+117001	      Akumulasi Penyusutan Inventaris Kantor	D	1	117	0	
+117002	      Akumulasi Penyusutan Perlatan Kantor	D	1	117	0	
+117003	      Akumulasi Penyusutan Kendaraan	D	1	117	0	
+117004	      Akumulasi Penyusutan Mesin	D	1	117	0	
+117005	      Akumulasi Penyusutan Bangunan	D	1	117	0	
+2	Kewajiban	T	2		1	
+20	  Utang Dagang	H	2		1	
+200001	  Utang Dagang	D	2	20	1	
+21	  Utang Pajak	H	2		1	
+210001	  Utang PPH Pasal 4 Ayat 2	D	2	21	1	
+210002	  Utang PPH pasal 21	D	2	21	1	
+210003	  Utang PPH Pasal 22	D	2	21	1	
+210004	  Utang PPH Pasal 23	D	2	21	1	
+210005	  Utang PPH Pasal 25/29	D	2	21	1	
+210006	  PPN Keluaran	D	2	21	1	
+210007	  SPM PPN	D	2	21	1	
+22	  Utang Lain-lain	H	2		1	
+211001	  Utang Pinjaman	D	2	21	1	
+211002	  Utang Gaji	D	2	21	1	
+211003	  Utang YMD	D	2	21	1	
+23	  Utang Sekutu	H	2		1	
+221001	  Utang Bp Michael Octavianto	D	2	23	1	
+3	Modal	T	3		1	
+310	  Modal Sekutu	H	3		1	
+310001	  Modal Bpk Michael O	D	3	310	1	
+310002	  Modal Ny	D	3	310	1	
+310003	  Modal Nn	D	3	310	1	
+310004	  Laba Bagian Dari Sekutu	D	3	310	1	
+311	  Laba Ditahan	H	3		1	
+311001	  Laba/Rugi Ditahan	D	3	311	1	
+311002	  Laba/Rugi Tahun Berjalan	D	3	311	1	
+311003	  Laba/Rugi Ditahan 2017	D	3	311	1	
+311004	  Laba/Rugi Ditahan 2018	D	3	311	1	
+311005	  Laba/Rugi Ditahan 2019	D	3	311	1	
+311006	  Laba/Rugi Ditahan 2020	D	3	311	1	
+4	Pendapatan	T	4		1	
+41	  Pendapatan	H	4		1	
+400101	  Pendapatan Dagang	D	4	41	1	
+400201	  Potongan Penjualan	D	4	41	1	
+400202	  Retur Penjualan	D	4	41	1	
+400203	  Penjualan	D	4	41	1	
+400205	  Pendapatan Lain-lain	D	4	41	1	
+400999	  Historical Balance	D	4	41	1	
+5	Harga Pokok Penjualan	T	5		0	
+51	  Harga Pokok Penjualan	H	5		0	
+50001	  Harga Pokok Penjualan	D	5	51	0	
+50002	  Pembelian	D	5	51	0	
+50003	  Ongkos Angkut Pembelian	D	5	51	0	
+50004	  Potongan Pembelian	D	5	51	0	
+51002	  Lain-Lain Pembelian	D	5	51	0	
+6	Biaya	T	6		0	
+61	  Beban Penjualan	H	6		0	
+610101	  Beban Iklan & Promosi	D	6	61	0	
+610102	  Beban Komisi Penjualan	D	6	61	0	
+610103	  Beban Hadiah	D	6	61	0	
+610104	  Beban Gaji	D	6	61	0	
+610105	  Beban Angkut Penjualan	D	6	61	0	
+610999	  Beban Penjualan Lainnya	D	6	61	0	
+62	  Biaya Administrasi & Umum	H	6		0	
+620001	  By Pemeliharaan Bgnan & Prasarana Jasa	D	6	62	0	
+620002	  By Pemeliharaan Bgnan & Prasarana Material	D	6	62	0	
+620003	  By Perbaikan & Perawatan Perabot Jasa	D	6	62	0	
+620004	  By Perbaikan & Perawatan Perabot material	D	6	62	0	
+620005	"  By Pemeliharaan Kend,A.Berat,Mesin-Pihak3 Jasa"	D	6	62	0	
+620006	  By Pemeliharaan Kendaraan Kantor Material	D	6	62	0	
+620007	  Biaya Oli & Pelumas	D	6	62	0	
+620008	  Pemakaian Sparepart Kend & A.Berat	D	6	62	0	
+620009	  Biaya Gaji	D	6	62	0	
+620010	  Biaya Tunjangan Lainnya	D	6	62	0	
+620011	  Biaya Jamsostek ( BPJS)	D	6	62	0	
+620012	  Iuran Pensiun	D	6	62	0	
+620013	  Biaya Pengobatan	D	6	62	0	
+620014	  Biaya Transport dan Makan	D	6	62	0	
+620015	"  Biaya THR, Bonus, Liburan, dan Cuti"	D	6	62	0	
+620016	  Biaya Dana Pensiun Past Service Liab.	D	6	62	0	
+620017	  Biaya Pengobatan di Luar	D	6	62	0	
+620018	  Biaya Honorer / Security	D	6	62	0	
+620019	  Biaya jasa pengelolaan tenaga kerja	D	6	62	0	
+620020	  By Penggantian Pengelolaan tenaga kerja	D	6	62	0	
+620021	  Biaya Seragam & Perlengkapan Kerja	D	6	62	0	
+620022	  Biaya Pesangon	D	6	62	0	
+620023	  Biaya Tunjangan Perumahan	D	6	62	0	
+620024	  Biaya Air	D	6	62	0	
+620025	  Biaya Listrik	D	6	62	0	
+620026	  Biaya Gas	D	6	62	0	
+620027	  Biaya Asuransi	D	6	62	0	
+620028	  Biaya Asuransi Pengangkutan	D	6	62	0	
+620029	  Biaya Sewa Bangunan	D	6	62	0	
+620030	  Biaya Jasa Pergudangan	D	6	62	0	
+620031	  Biaya Sewa Peralatan	D	6	62	0	
+620032	  Biaya Sewa Lahan	D	6	62	0	
+620033	  Biaya Jasa Kurir / Forwarder	D	6	62	0	
+620034	  Biaya Jasa Pelayaran	D	6	62	0	
+620035	  Biaya Pajak Bumi dan Bangunan	D	6	62	0	
+620036	  Biaya Pajak Kendaraan Bermotor	D	6	62	0	
+620037	  Biaya Perizinan Pemerintah	D	6	62	0	
+620038	  Biaya Izin Tenaga Kerja	D	6	62	0	
+620039	  Biaya Transportasi Lokal	D	6	62	0	
+620040	  Biaya Perjalanan Dalam Negeri	D	6	62	0	
+620041	  Biaya Perjalanan Luar Negeri	D	6	62	0	
+620042	  Biaya Bahan Bakar	D	6	62	0	
+620043	  Biaya Mess	D	6	62	0	
+620044	  Biaya Jamuan / Representasi	D	6	62	0	
+620045	  Biaya Olahraga Dan Permainan	D	6	62	0	
+620046	  Biaya Rekreasi	D	6	62	0	
+620047	  Biaya Sumbangan Sosial	D	6	62	0	
+620048	  Biaya Makanan dan Minuman	D	6	62	0	
+620049	  Biaya Perayaan dan Upacara	D	6	62	0	
+620050	  Biaya Peralatan Kantor	D	6	62	0	
+620051	  Biaya Perlengkapan Kantor	D	6	62	0	
+620052	  Biaya Komunikasi	D	6	62	0	
+620053	  Biaya Organisasi Professional Internasional	D	6	62	0	
+620054	  Biaya Organisasi Professional Nasional	D	6	62	0	
+620055	  Biaya Pelatihan External pihak ke-3	D	6	62	0	
+620056	  Biaya Kursus Umum	D	6	62	0	
+620057	  Biaya Pelatihan Internal Kantor	D	6	62	0	
+620058	  Biaya Beasiswa	D	6	62	0	
+620059	  Biaya Pencarian Tenaga Kerja	D	6	62	0	
+620060	"  Biaya Langganan Buku, Jurnal, Koran, dan Lainnya"	D	6	62	0	
+620061	  Biaya Konferensi Lokal	D	6	62	0	
+620062	  Biaya Konferensi di Luar Negeri	D	6	62	0	
+620063	  Biaya Konferensi Internal	D	6	62	0	
+620064	  Biaya Jasa Kustodian	D	6	62	0	
+620065	  Biaya Jasa Notaris / Hukum	D	6	62	0	
+620066	"  By Perjalanan, Pergantian utk Jasa Notaris (Huku"	D	6	62	0	
+620067	  Biaya Jasa Audit	D	6	62	0	
+620068	  Biaya Jasa Konsultan	D	6	62	0	
+620069	"  Biaya Perjalanan, Penggantian untuk konsultan"	D	6	62	0	
+620070	  Biaya Jasa Management	D	6	62	0	
+620071	  Beban  Penyusutan  Invetaris Kantor	D	6	62	0	
+620072	  Beban  Penyusutan  Kendaraan	D	6	62	0	
+620073	  Beban  Penyusutan  Mesin	D	6	62	0	
+620074	  Beban  Penyusutan  Bangunan	D	6	62	0	
+620075	  Beban Amortisasi Penyusutan	D	6	62	0	
+620076	  Biaya Administrasi Bank	D	6	62	0	
+620077	  Biaya Dokumentasi	D	6	62	0	
+620078	  Biaya Umum dan Administrasi	D	6	62	0	
+620079	  Beban PPh 4 ayat 2	D	6	62	0	
+620080	  Beban PPh 21	D	6	62	0	
+620081	  Beban PPh 23	D	6	62	0	
+620082	  Beban PPh 25	D	6	62	0	
+620083	  Beban PPh 26	D	6	62	0	
+620084	  Beban Denda Pajak	D	6	62	0	
+620085	  Biaya Retribusi	D	6	62	0	
+620086	  Biaya Iklan	D	6	62	0	
+620087	"  Biaya Hadiah, Parcel,dll."	D	6	62	0	
+620088	  Beban Pajak Penghasilan	D	6	62	0	
+7	Pendapatan Lain-lain	T	7		1	
+71	  Pendapatan Lainnya	H	7		1	
+710001	  Pendapatan Bunga Bank Jasa Giro	D	7	71	1	
+710002	  Pendapatan Bunga Bank Jasa Desposito	D	7	71	1	
+710003	  Pendapatan Penjualan Barang	D	7	71	1	
+8	Biaya Lain-lain	T	8		0	
+81	  Biaya Lain-lain	H	8		0	
+801001	  Biaya ADM  Bank	D	8	80	0	
+801002	  Beban Pajak Bunga Bank	D	8	80	0	
+801003	  Bunga Bank	D	8	80	0	
+801101	  Biaya Taksiran Pajak Penghasilan	D	8	80	0	
+801102	  Pendapatan/Biaya Pajak Yang Ditangguhkan	D	8	80	0	
+801999	  Biaya Lain-lain	D	8	80	0	
+999	  Sementara	D	8	80	0	

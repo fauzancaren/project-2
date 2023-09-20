@@ -1,0 +1,5 @@
+<?php defined('BASEPATH') OR exit('No direct script access allowed'); ?>
+
+ERROR - 2018-09-16 08:26:37 --> Severity: Warning --> rename(C:\xampp\htdocs\maxon\install\application\controllers../../install,C:\xampp\htdocs\maxon\install\application\controllers../../install_ex): The system cannot find the file specified. (code: 2) C:\xampp\htdocs\maxon\install\application\controllers\Welcome.php 182
+ERROR - 2018-09-16 08:28:34 --> Severity: Warning --> rename(C:\xampp\htdocs\maxon\install\application\controllers../../../install,C:\xampp\htdocs\maxon\install\application\controllers../../../install_ex): The system cannot find the file specified. (code: 2) C:\xampp\htdocs\maxon\install\application\controllers\Welcome.php 182
+ERROR - 2018-09-16 08:31:10 --> Severity: Warning --> rename(C:\xampp\htdocs\maxon\install\application\controllers/../../install,C:\xampp\htdocs\maxon\install\application\controllers/../../install_ex): The system cannot find the file specified. (code: 2) C:\xampp\htdocs\maxon\install\application\controllers\Welcome.php 182

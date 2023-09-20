@@ -1,0 +1,1 @@
+[02-Sep-2023 14:54:06 UTC] PHP Fatal error:  Cannot redeclare get_instance() (previously declared in /home/jobiindonesia/public_html/pinghardware.jobii.id/system/core/CodeIgniter.php:366) in /home/jobiindonesia/public_html/software.jobii.id/pos/system/core/CodeIgniter.php on line 366

@@ -1,0 +1,664 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Booking Order</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f7f7f7;
+        }
+    
+        h1 {
+            text-align: center;
+            margin-bottom: 20px;
+            color: #333;
+        }
+    
+        label {
+            font-weight: bold;
+            display: block;
+            margin-bottom: 5px;
+        }
+    
+        input[type="text"],
+        select {
+            padding: 10px;
+            border-radius: 4px;
+            border: 1px solid #ccc;
+            width: 200px;
+            box-sizing: border-box;
+        }
+    
+        button {
+            padding: 10px 20px;
+            background-color: #4CAF50;
+            color: white;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            margin-top: 10px;
+        }
+    
+        button:hover {
+            background-color: #45a049;
+        }
+    
+        table {
+            border-collapse: collapse;
+            width: 100%;
+            margin-bottom: 20px;
+        }
+    
+        th,
+        td {
+            border: 1px solid #ccc;
+            padding: 10px;
+            text-align: center;
+        }
+    
+        th {
+            background-color: #f2f2f2;
+        }
+    
+        .mini-window {
+            position: absolute;
+            background-color: white;
+            border: 1px solid #ccc;
+            padding: 10px;
+            max-height: 200px;
+            overflow-y: scroll;
+            display: none;
+            z-index: 1;
+        }
+    
+        .mini-window input[type="text"] {
+            width: 100%;
+            padding: 8px;
+            border-radius: 4px;
+            border: 1px solid #ccc;
+            margin-bottom: 10px;
+            box-sizing: border-box;
+        }
+    
+        .mini-window table {
+            width: 100%;
+        }
+    
+        .mini-window th,
+        .mini-window td {
+            border: none;
+            padding: 8px;
+            text-align: left;
+        }
+    
+        .mini-window th {
+            background-color: #f2f2f2;
+            font-weight: bold;
+        }
+    
+        .mini-window tr:hover {
+            background-color: #f7f7f7;
+            cursor: pointer;
+        }
+    
+        .selected {
+            background-color: #e0e0e0 !important;
+        }
+    
+        .button-container {
+            text-align: left;
+            margin-top: 10px;
+            margin-bottom: 5px;
+        }
+        
+    </style>
+    
+    </head>
+    <body onload="getSales()">
+        <h1>Booking Order</h1>
+    
+        <div>
+            <label for="sales">Sales:</label>
+            <select id="sales"></select>
+        </div>
+    
+        <div>
+            <label for="customer-search">Customer Search:</label>
+            <input type="text" id="customer-search" readonly>
+            <button onclick="openCustomerMiniWindow()">Find</button>
+            <div class="mini-window" id="customer-mini-window"></div>
+        </div>
+    
+        <div>
+            <label for="item-search">Item Search:</label>
+            <input type="text" id="item-search">
+            <button onclick="openItemMiniWindow()">Find</button>
+            <div class="mini-window" id="item-mini-window"></div>
+        </div>
+        <button onclick="getDisc()">Add to Table</button>
+            <button onclick="submitBookingOrder(), setBarcode()">Submit Sales Order</button>
+            <button  id="print-button" onclick="openNewWindow()" disabled>Print</button>
+        <div class="button-container">
+            
+            <button onclick="location.reload()">New Booking Order</button>
+        </div>
+    
+    <table>
+        <thead>
+            <tr>
+                <th>Customer</th>
+                <th>Item Number</th>
+                <th>Item Description</th>
+                <th>Price</th>
+                <th>Sales</th>
+                <th>Qty</th>
+                <th>Unit</th>
+                <th>Discount</th>
+                <th>Discount 2</th>
+                <th>Delete</th>
+            </tr>
+        </thead>
+        <tbody id="item-table">
+            <!-- Table rows will be dynamically added here -->
+        </tbody>
+    </table>
+    
+    <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
+  
+  
+  
+    <script>
+      
+        function openCustomerMiniWindow() {
+            
+            const customerSearchInput = document.getElementById('customer-search').value;
+      
+            fetch('https://jobii.id:6161/getCustomer')
+                .then(response => response.json())
+                .then(data => {
+                    const filteredCustomers = data.filter(customer => customer.customer_number.includes(customerSearchInput));
+                    showCustomerResults(filteredCustomers);
+                })
+                .catch(error => {
+                    console.error('Error:', error);
+                });
+        }
+      
+        function showCustomerResults(customers) {
+    const miniWindow = document.getElementById("customer-mini-window");
+    miniWindow.innerHTML = "";
+
+    const searchInput = document.createElement("input");
+    searchInput.type = "text";
+    searchInput.placeholder = "Search customers...";
+    searchInput.addEventListener("input", filterCustomers);
+
+    const table = document.createElement("table");
+    table.classList.add("customer-table");
+
+    const headerRow = document.createElement("tr");
+    const headers = ["Customer Number", "Company", "Phone"];
+
+    headers.forEach(header => {
+        const th = document.createElement("th");
+        th.textContent = header;
+        headerRow.appendChild(th);
+    });
+
+    table.appendChild(headerRow);
+
+    customers.forEach(customer => {
+        const customerRow = createCustomerRow(customer);
+        table.appendChild(customerRow);
+    });
+
+    miniWindow.appendChild(searchInput);
+    miniWindow.appendChild(table);
+
+    miniWindow.style.display = "block";
+}
+
+var global_custId = null;
+function createCustomerRow(customer) {
+    const row = document.createElement("tr");
+
+    const customerNumberCell = document.createElement("td");
+    customerNumberCell.textContent = customer.customer_number;
+    row.appendChild(customerNumberCell);
+
+    const companyCell = document.createElement("td");
+    companyCell.textContent = customer.company;
+    row.appendChild(companyCell);
+
+    const phoneCell = document.createElement("td");
+    phoneCell.textContent = customer.phone;
+    row.appendChild(phoneCell);
+
+    row.addEventListener("click", function() {
+        const customerCodeInput = document.getElementById("customer-search");
+        customerCodeInput.value = this.querySelector("td:nth-child(1)").textContent;
+        row.classList.toggle("selected");
+        global_custId = customerCodeInput.value
+
+        exitCustomerMiniWindow();
+    });
+
+    return row;
+}
+    
+        function filterCustomers() {
+            const searchInputValue = this.value.toLowerCase();
+            const customerRows = document.getElementsByClassName("customer-table")[0].getElementsByTagName("tr");
+      
+            for (let i = 1; i < customerRows.length; i++) {
+                const customerNumber = customerRows[i].getElementsByTagName("td")[0].textContent.toLowerCase();
+      
+                if (customerNumber.includes(searchInputValue)) {
+                    customerRows[i].style.display = "";
+                } else {
+                    customerRows[i].style.display = "none";
+                }
+            }
+        }
+
+        
+        function exitCustomerMiniWindow() {
+            const miniWindow = document.getElementById("customer-mini-window");
+            miniWindow.style.display = "none";
+        }
+        
+        // Allow the user to exit the customer mini window by pressing the "Escape" key
+        document.addEventListener("keydown", function(event) {
+            if (event.key === "Escape") {
+                exitCustomerMiniWindow();
+            }
+        });
+
+
+        function getDisc() {
+    const customerSearchInput = document.getElementById("customer-search");
+const cust_code = customerSearchInput.value;
+console.log(cust_code)
+const itemSearchInput = document.getElementById("item-search").value;
+console.log(itemSearchInput)
+
+
+   
+const url = "https://jobii.id:6161/getDiscVal";
+
+
+  let customer_code= cust_code
+    let item_numb = itemSearchInput
+
+
+axios.get(url, { params: { customer_code, item_numb } })
+      .then(function (response) {
+        const [discount, discountss] = response.data.discounts;
+  console.log(discount, discountss);
+  addItemToTable(discount, discountss)
+      })
+      .catch(function (error) {
+        // Handle the error
+        console.error(error);
+      });
+
+// axios({
+//   method: "get",
+//   url: url,
+//   data: requestBody,
+//   headers: {
+//     "Content-Type": "application/json"
+//   }
+// })
+// .then(function (response) {
+//     const discounts = response.data;
+//   console.log(discounts);
+
+//   // Handle the response as needed
+//   // addItemToTable(discount, discountss);
+// })
+// .catch(function (error) {
+//   console.error("Error getting discount:", error);
+//   // Handle  the error as needed
+// });
+        }
+
+
+        function addItemToTable(discount, discount2) {
+    var salesSelect = document.getElementById("sales");
+    var selectedSales = salesSelect.value;
+
+    
+    var itemSearchInput = document.getElementById("item-search").value;
+
+    var selectedCustomer = document.querySelector("#customer-mini-window .customer-table tr.selected");
+    var selectedCustomerNumber = selectedCustomer ? selectedCustomer.querySelector("td:nth-child(1)").textContent : "";
+    var selectedCustomerCompany = selectedCustomer ? selectedCustomer.querySelector("td:nth-child(2)").textContent : "";
+
+    var selectedItem = document.querySelector("#item-mini-window .item-table tr.selected");
+    var selectedItemNumber = selectedItem ? selectedItem.querySelector("td:nth-child(1)").textContent : "";
+    var selectedItemDescription = selectedItem ? selectedItem.querySelector("td:nth-child(2)").textContent : "";
+    var selectedItemPrice = selectedItem ? selectedItem.querySelector("td:nth-child(3)").textContent : "";
+
+    var table = document.getElementById("item-table");
+
+    var newRow = document.createElement("tr");
+
+    var customerCell = document.createElement("td");
+    customerCell.textContent = selectedCustomerCompany;
+    newRow.appendChild(customerCell);
+
+    var itemNumberCell = document.createElement("td");
+    itemNumberCell.textContent = selectedItemNumber;
+    newRow.appendChild(itemNumberCell);
+
+    var descriptionCell = document.createElement("td");
+    descriptionCell.textContent = selectedItemDescription;
+    newRow.appendChild(descriptionCell);
+
+    var priceCell = document.createElement("td");
+    priceCell.textContent = selectedItemPrice;
+    newRow.appendChild(priceCell);
+
+    var salesCell = document.createElement("td");
+    salesCell.textContent = selectedSales;
+    newRow.appendChild(salesCell);
+
+    var quantityCell = document.createElement("td");
+    var quantityInput = document.createElement("input");
+    quantityInput.type = "number";
+    quantityInput.value = 1; // Set default quantity to 1
+    quantityCell.appendChild(quantityInput);
+    newRow.appendChild(quantityCell);
+
+    var unitCell = document.createElement("td");
+    var unitInput = document.createElement("input");
+    unitInput.type = "text"; // Change input type to "text"
+    unitInput.value = "pcs"; // Set default unit value
+    unitCell.appendChild(unitInput);
+    newRow.appendChild(unitCell);
+
+    var discountCell = document.createElement("td");
+    discountCell.textContent = discount;
+    newRow.appendChild(discountCell);
+    var discount2Cell = document.createElement("td");
+    discount2Cell.textContent = discount2;
+    newRow.appendChild(discount2Cell);
+
+    var deleteCell = document.createElement("td");
+    var deleteButton = document.createElement("button");
+    deleteButton.textContent = "Delete";
+    deleteButton.addEventListener("click", function(e) {
+        deleteRow(e);
+    });
+    deleteCell.appendChild(deleteButton);
+    newRow.appendChild(deleteCell);
+
+    table.appendChild(newRow);
+
+    // Clear the input fields
+    document.getElementById("item-search").value = "";
+
+    // Hide the mini windows
+    exitCustomerMiniWindow();
+    exitItemMiniWindow();
+}
+
+function deleteRow(e) {
+    var rowToDelete = e.target.parentNode.parentNode;
+    var table = rowToDelete.parentNode;
+    table.removeChild(rowToDelete);
+}
+let global_BOID;
+let global_subtot;
+
+function submitBookingOrder() {
+    var salesSelect = document.getElementById("sales");
+    var selectedSales = salesSelect.value;
+    const customerSearchInput = document.getElementById("customer-search");
+const cust_code = customerSearchInput.value;
+
+    var table = document.getElementById("item-table");
+    var rows = table.getElementsByTagName("tr");
+    var lineItems = [];
+
+    for (var i = 0; i < rows.length; i++) {
+        var row = rows[i];
+        var cells = row.getElementsByTagName("td");
+
+        var itemNumber = cells[1].textContent;
+        var quantityInput = cells[5].getElementsByTagName("input")[0];
+        var quantity = parseInt(quantityInput.value);
+        var unitInput = cells[6].getElementsByTagName("input")[0];
+        var unit = unitInput.value;
+        var description = cells[2].textContent;
+        var price = parseFloat(cells[3].textContent);
+        
+        var lineItem = {
+            "item_number": itemNumber,
+            "qty": quantity,
+            "unit": unit,
+            "description": description,
+            "price": price
+        };
+
+        lineItems.push(lineItem);
+    }
+
+    if (lineItems.length === 0) {
+        console.error("No line items provided");
+        return;
+    }
+    var bookingOrder = {
+        "salesman": selectedSales,
+        "customer_code": global_custId,
+        "line_items": lineItems
+    };
+
+    // Make a POST request to submit the booking order
+    fetch("https://jobii.id:6161/submitBo", {
+        method: "POST",
+        headers: {
+            "Content-Type": "application/json"
+        },
+        body: JSON.stringify(bookingOrder)
+    })
+    .then(response => response.json())
+    .then(data => {
+        console.log("Booking order submitted successfully:", data);
+        // Handle the response as needed
+         global_BOID = data[0]?.sales_order_number
+         console.log(global_BOID)
+         setBarcode()
+    })
+    .catch(error => {
+        console.error("Error submitting booking order:", error);
+        // Handle the error as needed
+    });
+    var printButton = document.getElementById("print-button");
+    printButton.disabled = false;
+    document.getElementById("customer-search").value = "";
+}
+function openNewWindow() {
+    const url = "print.html";
+  const features = "width=800,height=500,resizable,scrollbars";
+
+window.open(url, "_blank", features);
+
+  
+}
+
+function setBarcode(){
+
+   
+
+    const url = "https://jobii.id:6161/getTot";
+
+
+
+    axios.get(url, { params: { global_BOID } })
+      .then(function (response) {
+        let responseValue1 = global_BOID;
+        if (responseValue1.includes("BO")) {
+        struk = "Booking Order";
+ console.log(global_BOID)
+    let responseValue2 = response.data;
+    const jsonString = JSON.stringify(responseValue2);
+    // const jsonString2 = JSON.stringify(responseValue3);
+    const jsonparse = JSON.parse(jsonString)
+    // const jsonparse2 = JSON.parse(jsonString2)
+    window.localStorage.setItem('responseValue1', responseValue1);
+    window.localStorage.setItem('responseValue2', jsonparse.subTot);
+    window.localStorage.setItem('responseValue3', jsonparse.salesm);
+    window.localStorage.setItem('responseValue4', struk);
+
+} else {
+    console.log("Bukan Booking Order");
+}
+      })
+      .catch(function (error) {
+        // Handle the error
+        console.error(error);
+      });
+
+}
+
+    </script>
+    
+    <script>
+        function openItemMiniWindow() {
+    const itemSearchInput = document.getElementById('item-search').value;
+    
+
+    fetch('https://jobii.id:6161/getItem')
+        .then(response => response.json())
+        .then(data => {
+            const filteredItems = data.filter(item => {
+                const itemNumber = item.item_number.toLowerCase();
+                const description = item.description.toLowerCase();
+                return itemNumber.includes(itemSearchInput.toLowerCase()) || description.includes(itemSearchInput.toLowerCase());
+            });
+            showItemResults(filteredItems);
+        })
+        .catch(error => {
+            console.error('Error:', error);
+        });
+}
+
+      
+        function showItemResults(items) {
+            const miniWindow = document.getElementById("item-mini-window");
+            miniWindow.innerHTML = "";
+      
+            const searchInput = document.createElement("input");
+            searchInput.type = "text";
+            searchInput.placeholder = "Search items...";
+            searchInput.addEventListener("input", filterItems);
+      
+            const table = document.createElement("table");
+            table.classList.add("item-table");
+      
+            const headerRow = document.createElement("tr");
+            const headers = ["Item Number", "Description", "Price", "Qty in Stock"];
+      
+            headers.forEach(header => {
+                const th = document.createElement("th");
+                th.textContent = header;
+                headerRow.appendChild(th);
+            });
+      
+            table.appendChild(headerRow);
+      
+            items.forEach(item => {
+                const itemRow = createItemRow(item);
+                table.appendChild(itemRow);
+            });
+      
+            miniWindow.appendChild(searchInput);
+            miniWindow.appendChild(table);
+      
+            miniWindow.style.display = "block";
+        }
+      
+        function createItemRow(item) {
+            const row = document.createElement("tr");
+      
+            const itemNumberCell = document.createElement("td");
+            itemNumberCell.textContent = item.item_number;
+            row.appendChild(itemNumberCell);
+      
+            const descriptionCell = document.createElement("td");
+            descriptionCell.textContent = item.description;
+            row.appendChild(descriptionCell);
+      
+            const priceCell = document.createElement("td");
+            priceCell.textContent = item.retail;
+            row.appendChild(priceCell);
+      
+            const qtyInStockCell = document.createElement("td");
+            qtyInStockCell.textContent = item.quantity_in_stock;
+            row.appendChild(qtyInStockCell);
+      
+            row.addEventListener("click", function() {
+                const itemInventoryInput = document.getElementById("item-search");
+                itemInventoryInput.value = this.querySelector("td:nth-child(1)").textContent;
+                row.classList.toggle("selected");
+                exitItemMiniWindow();
+            });
+      
+            return row;
+        }
+      
+        function filterItems() {
+    const searchInputValue = this.value.toLowerCase();
+    const itemRows = document.getElementsByClassName("item-table")[0].getElementsByTagName("tr");
+
+    for (let i = 1; i < itemRows.length; i++) {
+        const itemNumber = itemRows[i].getElementsByTagName("td")[0].textContent.toLowerCase();
+        const description = itemRows[i].getElementsByTagName("td")[1].textContent.toLowerCase();
+
+        if (itemNumber.includes(searchInputValue) || description.includes(searchInputValue)) {
+            itemRows[i].style.display = "";
+        } else {
+            itemRows[i].style.display = "none";
+        }
+    }
+}
+      
+        function exitItemMiniWindow() {
+            const miniWindow = document.getElementById("item-mini-window");
+            miniWindow.style.display = "none";
+        }
+        
+        // Allow the user to exit the item mini window by pressing the "Escape" key
+        document.addEventListener("keydown", function(event) {
+            if (event.key === "Escape") {
+                exitItemMiniWindow();
+            }
+        });
+    </script>
+    
+    <script>
+        function getSales() {
+            
+            const salesDropdown = document.getElementById('sales');
+            fetch('https://jobii.id:6161/getSales')
+                .then(response => response.json())
+                .then(data => {
+                    // Clear existing options
+                    salesDropdown.innerHTML = '';
+                    
+                    // Create and append new options based on the data
+                    data.forEach(sales => {
+                        const option = document.createElement('option');
+                        option.value = sales.salesman;
+                        option.textContent = sales.salesman;
+                        salesDropdown.appendChild(option);
+                    });
+                });
+        }
+        
+    </script>
+    
+</body>
+</html>

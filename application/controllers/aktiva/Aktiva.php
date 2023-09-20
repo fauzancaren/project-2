@@ -1,0 +1,242 @@
+<?php if(!defined('BASEPATH')) exit('No direct script access allowd');
+
+class Aktiva extends CI_Controller {
+    private $limit=10;
+    private $table_name='fa_asset';
+    private $sql="";
+    private $file_view='aktiva/asset';
+    private $primary_key='id';
+    private $controller='aktiva';
+    
+	function __construct()
+	{
+		parent::__construct();
+
+		if(!$this->access->is_login())redirect(base_url());
+        
+ 		$this->load->helper(array('url','form','mylib_helper'));
+		$this->load->library('template');
+		$this->load->library('form_validation');
+		$this->load->model('aktiva_model');
+		$this->sql="select id,description,group_id,location_id,acquisition_date,
+			depn_method,useful_lives		from fa_asset";
+	}
+	
+	function nomor_bukti($add=false)
+	{
+		$key="Fixed Asset Numbering";
+        $no=$this->sysvar->autonumber($key,0,"!FA~$00001");
+		if($add){
+		  	$this->sysvar->autonumber_inc($key);
+		}  
+		return $no;
+	}
+	function set_defaults($record=NULL){
+        $data=data_table($this->table_name,$record);
+		if($record==null){
+			$data["acquisition_date"]=date("Y-m-d H:i:s");
+			$data['id']='AUTO';
+		}
+        $data['mode']='';
+        $data['message']='';		
+		
+		$data['lookup_group_aktiva']=$this->list_of_values->render(array(
+			"dlgBindId"=>"fa_asset_group",
+			"dlgColsData"=>array("name","id"),
+			"dlgRetFunc"=>"$('#group_id').val(row.id);"			
+		));
+			
+        return $data;
+	}
+	function index()
+	{	
+            $this->browse();
+	}
+	function get_posts(){
+            $data=  data_table_post($this->table_name);
+            return $data;
+	}
+	function add()
+	{
+		$data=$this->set_defaults();
+		$this->_set_rules();
+		$data['mode']='add';
+		$this->load->model('aktiva_group_model');
+		$data['group_list']=$this->aktiva_group_model->lookup();
+		
+		$this->load->model('table_model');
+		$table_def=$this->table_model->table_def('fa_asset_group');
+		$this->template->display_form_input($this->file_view,$data,'');
+	}
+	function save(){
+		$this->load->model('aktiva_group_model');
+		$mode=$this->input->post("mode");
+		$this->_set_rules();
+		$data=$this->get_posts();
+ 		$id=$data['id'];
+		if($id=="AUTO" || $id==""){
+			$id=$this->nomor_bukti(true);
+			$data['id']=$id;
+		}
+		$data['message']='Save Success';
+		$data['mode']='view';
+		if ($this->form_validation->run()=== TRUE){
+			unset($data['message']);
+			unset($data['mode']);
+			unset($data['group_list']);
+			if($mode=="add"){
+				$success=$this->aktiva_model->save($data);
+				$data['message']='Data sudah disimpan.';
+			} else {
+				$success=$this->aktiva_model->update($id,$data);
+				$data['message']='Data sudah disimpan.';
+				
+			}
+			
+		} else {
+			$data['message']='Error Validation.';
+			$success=false;
+		}
+		$data['success']=$success;
+		echo json_encode($data);
+
+
+	}
+	function view($id,$message=null){
+		 $id=urldecode($id);
+		 $data['id']=$id;
+		 $model=$this->aktiva_model->get_by_id($id)->row();
+		 $data=$this->set_defaults($model);
+		 $data['mode']='view';
+         $data['message']=$message;
+		$this->load->model('aktiva_group_model');
+		$data['group_list']=$this->aktiva_group_model->lookup();
+         $this->template->display_form_input($this->file_view,$data,'');
+	}
+
+	 // validation rules
+	function _set_rules(){	
+		 $this->form_validation->set_rules($this->primary_key,'Kode', 'required|trim');
+	}
+	
+	 // date_validation callback
+	function valid_date($str)
+	{
+	 if(!preg_match('/^[0-9]{4}-[0-9]{2}-[0-9]{2}$/',$str))
+	 {
+		 $this->form_validation->set_message('valid_date',
+		 'date format is not valid. yyyy-mm-dd');
+		 return false;
+	 } else {
+	 	return true;
+	 }
+	}
+    function browse($offset=0,$limit=50,$order_column='sales_order_number',$order_type='asc'){
+		$data['controller']='aktiva/'.$this->controller;
+		$data['fields_caption']=array('Kode','Nama Aktiva','Kelompok','Lokasi','Tgl Beli'
+		,'Metode','Waktu');
+		$data['fields']=array( 'id','description','group_id','location_id','acquisition_date','depn_method'
+            ,'useful_lives');
+		$data['field_key']='id';
+		$data['caption']='DAFTAR AKTIVA TETAP';
+
+		$this->load->library('search_criteria');
+		
+		$faa[]=criteria("Kode","sid_number");
+		$faa[]=criteria("Nama","sid_nama");
+		$data['criteria']=$faa;
+        $this->template->display_browse2($data);            
+    }
+    function browse_data($offset=0,$limit=100,$nama=''){
+    	$sql=$this->sql." where 1=1";
+		if($this->input->get('sid_number')!='')$sql.=" and id like '".$this->input->get('sid_number')."%'";	
+		if($this->input->get('sid_nama')!='')$sql.=" description like '".$this->input->get('sid_nama')."%'";
+        //$sql.=" limit $offset,$limit";
+        if($this->input->get('tb_search')!='')$sql.=" and description like '%".$this->input->get('tb_search')."%'";
+        
+        if($this->input->get("page"))$offset=$this->input->get("page");
+        if($this->input->get("rows"))$limit=$this->input->get("rows");
+        if($offset>0)$offset--;
+        $offset=$limit*$offset;
+        $sql.=" limit $offset,$limit";
+        		
+        
+        echo datasource($sql);
+    }	 
+	function delete($id){
+		 $id=urldecode($id);
+	 	$this->aktiva_model->delete($id);
+	 	$this->browse();
+	}
+	function find($nomor){
+		$nomor=urldecode($nomor);
+		$query=$this->db->query("select description,depn_method,useful_lives from fa_asset where id='$nomor'");
+		echo json_encode($query->row_array());
+ 	}
+    function rpt($id){
+		 $data['date_from']=date('Y-m-d 00:00:00');
+		 $data['date_to']=date('Y-m-d 23:59:59');
+		 $data['select_date']=true;		 
+    	 switch ($id) {
+			 case 'mutasi':
+				 $data['criteria1']=true;
+				 $data['label1']='Rekening';
+				 $data['text1']='';
+				 break;			 
+			 default:
+				 break;
+		 }
+		 $rpt='aktiva/aktiva/rpt/'.$id;
+		 $data['rpt_controller']=$rpt;
+		 
+		if(!$this->input->post('cmdPrint')){
+			$this->template->display_form_input('criteria',$data,'');
+		} else {
+			///$this->load->view('aktiva/rpt/'.$id);
+			$this->load->helper('browse_select');
+			switch($id){
+				case 'aktiva':
+					$sql="select * from fa_asset";
+					$data['caption']="DAFTAR ASSET";
+					$data['content']=browse_select(
+							array('sql'=>$sql,
+							'action_button'=>''));
+					$this->load->view('simple_print.php',$data);    	
+					break;
+				case 'group':
+					$sql="select * from fa_asset_group";
+					$data['caption']="DAFTAR ASSET GROUP";
+					$data['content']=browse_select(
+							array('sql'=>$sql,
+							'action_button'=>''));
+					$this->load->view('simple_print.php',$data);    
+					break;
+				case 'proses':
+					$sql="select * from fa_asset_depreciation_schedule";
+					$data['caption']="DAFTAR ASSET PROSES";
+					$data['content']=browse_select(
+							array('sql'=>$sql,
+							'action_button'=>''));
+					$this->load->view('simple_print.php',$data);    
+		
+					break;
+
+			}
+		}
+   }	
+   function reports(){
+		$this->template->display('aktiva/menu_reports');
+	}
+	function daftar_saldo(){
+		$sql="select fa.description,fa.useful_lives,0 as amount
+		from fa_asset fa  ";
+		echo datasource($sql);			
+	}
+	function select($account=''){
+		$account=urldecode($account);
+		$sql="select description,id from fa_asset where 1=1";
+		if($account!="")$sql.=" and (description like '$account%' or description like '%$account%')";
+		$sql.=" order by description";
+		echo datasource($sql);	
+	}
+}

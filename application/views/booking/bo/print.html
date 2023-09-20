@@ -1,0 +1,141 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Printable Content</title>
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
+    <script src="https://cdn.rawgit.com/jeromeetienne/jquery-qrcode/master/jquery.qrcode.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
+
+
+    <style>
+        @media print {
+            html, body {
+                width: 58mm;
+                height: 210mm;
+                margin: 0;
+                padding: 0;
+                display: flex;
+                flex-direction: column;
+                align-items: center;
+            }
+        }
+
+        .container {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            height: 100%;
+            width: 100%;
+            padding: 10px;
+        }
+
+        .frame {
+            position: relative;
+            width: 150px;
+            height: 150px;
+            border: 2px solid black;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .frame img {
+            position: absolute;
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+        }
+
+        h1 {
+            text-align: center;
+            margin: 10px 0;
+            font-size: small;
+        }
+        h2 {
+            text-align: center;
+            margin: 10px 0;
+            font-size: medium;
+        }
+        p {
+            text-align: center;
+            margin: 10px 0;
+            font-size: medium;
+        }
+        #warn {
+            text-align: center;
+            width: 100%;
+            word-break: break-all;
+            font-size:x-small;
+
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1 id="names"></h1>
+        <p id="jenis"></p>
+        <div class="frame" id="qrcode">
+            <img src="assets/png-clipart-roronoa-zoro-render-roronoa-zoro-illustration.png" alt="logo" />
+        </div>
+        <h1 id="subTotal"></h1>
+        <h1 id="datess"></h1>
+        <h1 id="salesman"></h1>
+        <h2>===============</h1>
+        <div id="warn">
+            <h3>Struk ini bukan bukti pembayaran</h3>
+            <h3>selesaikan transaksi</h3>
+            <h3>anda dikasir</h3>
+        </div>
+    </div>
+
+    <script>
+        let name;
+        let now = new Date();
+let date = now.getFullYear()+'-'+(now.getMonth()+1)+'-'+now.getDate();
+function getName() {
+        return new Promise((resolve, reject) => {
+            const url = "https://jobii.id:6161/getCompanyName";
+
+            axios.get(url)
+                .then(function (response) {
+                    name = response.data.compN;
+                    resolve(name);
+                })
+                .catch(function (error) {
+                    // Handle the error
+                    console.error(error);
+                    reject(error);
+                });
+        });
+    }
+    $(document).ready(function() {
+        getName().then(() => {
+            const responseValue1 = localStorage.getItem('responseValue1');
+            const responseValue2 = parseInt(localStorage.getItem('responseValue2')).toLocaleString('id-ID');
+            const responseValue3 = localStorage.getItem('responseValue3');
+            const responseValue4 = localStorage.getItem('responseValue4');
+            $('#subTotal').text(`Rp ${responseValue2}`);
+            $('#names').text(`${name}`);
+            $('#datess').text(`tanggal: ${date}`);
+            $('#salesman').text(`salesman: ${responseValue3}`);
+            $('#jenis').text(`${responseValue4}`);
+        
+            $('#qrcode').qrcode({
+                text: responseValue1,
+                width: 128,
+                height: 128
+            });
+
+            window.print();
+
+            localStorage.removeItem('responseValue1');
+            localStorage.removeItem('responseValue2');
+        })
+    });
+    </script>
+</body>
+</html>

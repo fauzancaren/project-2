@@ -1,0 +1,42 @@
+create view qry_chart_of_account as 
+SELECT  coa.ID,coa.Company_Code, coa.Account, 
+		coat.Account_Type AS Type, coa.Account_Description, 
+		coa.Account_Type, 
+		coa.Group_Type, coa.Group_Sequence, coa.Sub_Account, 
+		coa.Sub_Account_Description, coa.Beginning_Balance, coa.Notes, 
+		grg.Group_Name, 
+		coa.Company_Code + coa.account_type + coa.Group_Type + Account 
+		+ (CASE coa.sub_account WHEN '000' THEN '' ELSE coa.Sub_Account END ) AS Concat_Code, 
+		Account + ' ' + Sub_Account AS Account_Code, 
+		coa.Account_description + ' ' + coa.Sub_Account_description AS Account_Description_Text, 
+		coat.Income_Statement_Num, coat.Sub_Acc_Income, coa.DB_or_CR
+	FROM chart_of_accounts AS coa, 
+	    chart_of_account_types AS coat, 
+	    gl_report_groups AS grg 
+	WHERE coa.Account_Type = coat.Account_Type_Num
+	     AND (coa.Company_Code = grg.Company_Code) 
+		AND (coa.Account_Type= grg.Account_Type) 
+		AND (coa.Group_Type = grg.Group_Type) 
+
+
+create view qry_gl_transactions as 
+SELECT gtr.Transaction_ID, gtr.Company_Code, gtr.gl_id, 
+	gtr.Account_ID, qcoa.Account_Description_Text, 
+	qcoa.Account as Account_Code, 
+	gtr.Date, gtr.Debit, gtr.Credit, gtr.Source, gtr.Operation, 
+	qcoa.Account_Type, qcoa.Type, qcoa.Group_Name,
+	CASE 
+	WHEN qcoa.Account_Type=1 or qcoa.Account_Type=6 or qcoa.Account_Type=8 THEN 
+	     NULLIF(Debit-Credit,0)
+	END  AS SaldoDB,
+	qcoa.Income_Statement_Num, qcoa.Sub_Acc_Income, 
+	CASE 
+	WHEN Account_Type=2 OR Account_Type=3 OR Account_Type=4 Or Account_Type=7 THEN
+	     COALESCE(Credit-Debit,0)
+	END  AS SaldoCR,
+	qcoa.DB_or_CR, DATE_FORMAT(Date, '%y-%m') AS Period,gtr.project_code
+	FROM gl_transactions AS gtr ,qry_chart_of_account AS qcoa 
+	WHERE gtr.Account_ID = qcoa.ID 
+	
+	
+	

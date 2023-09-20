@@ -1,0 +1,344 @@
+<?php
+class Sales_order_model extends CI_Model 
+{
+	private $primary_key='sales_order_number';
+	private $table_name='sales_order';
+	public $amount_paid=0;
+	public $saldo=0;
+	public $amount=0;
+	public $sub_total=0;
+	public $disc_amount_1=0;
+	public $tax=0;
+	private $sql=""; 
+	function __construct(){
+		parent::__construct();        
+         
+        $this->sql="select s.sales_order_number,s.sales_date,s.sold_to_customer,
+			c.company,s.amount,s.discount_percent,s.disc_amount_1,s.sales_tax_percent 
+			from sales_order_number";
+
+	}
+	function amount(){return $this->amount;}  
+	function recalc($nomor){
+	     
+		$this->load->model('sales_order_lineitems_model');
+	    $this->sub_total=$this->sales_order_lineitems_model->total_amount($nomor);
+
+    	$so=$this->get_by_id($nomor)->row();
+		$disc_amount=0;
+		$tax_amount=0;
+		
+		if($so){
+			$disc_amount=$so->discount*$this->sub_total;
+			$this->disc_amount_1=$disc_amount;
+			$this->amount=$this->sub_total-$disc_amount;
+			$tax_amount=$so->sales_tax_percent*$this->amount;
+			
+			$this->tax=$tax_amount;
+			
+			$this->amount=$this->amount+$tax_amount;
+			$this->amount=$this->amount+$so->freight;
+			$this->amount=$this->amount+$so->other;
+		}
+
+		$this->db->where($this->primary_key,$nomor);
+		$this->db->update($this->table_name,array('amount'=>$this->amount,
+		'subtotal'=>$this->sub_total,'disc_amount_1'=>$disc_amount,'tax'=>$tax_amount));
+		
+	    $this->load->model('payment_model');
+	    $this->amount_paid=$this->payment_model->total_amount($nomor);
+	    $this->saldo= $this->amount-$this->amount_paid;
+		
+	    return $this->saldo;
+	}
+	
+	function get_paged_list($limit=10,$offset=0,$order_column='',$order_type='asc')
+	{
+	    $nama=$this->input->get('nama');
+		$sql=$this->sql;
+		if($nama!='')$sql.=" where c.company like '%$nama%'";
+		if($order_column!=''){
+			$sql.=" order_by $order_column";
+			$sql.=" $order_type ";
+		}
+	    return $this->db->query($sql,$limit,$offset);
+	}
+	function count_all(){
+		return $this->db->count_all($this->table_name);
+	}
+	function get_by_id($id){
+		$this->db->where($this->primary_key,$id);
+		return $this->db->get($this->table_name);
+	}
+	function get_items($so_number){
+		$s="select * from sales_order_lineitems 
+		where sales_order_number='$so_number'";
+		return $this->db->query($s);
+	}
+	function get_salesman($so_number){
+		$salesman='';
+		if($row=$this->db->query("select salesman from sales_order 
+			where sales_order_number='$so_number'")->row()){
+				$salesman=$row->salesman;
+			}
+		return $salesman;
+	}
+	function save($data){
+		$data['cid']=cid();
+		if($data['cid']=='ALL')unset($data['cid']);
+		if(isset($data['delivered']))$data['delivered']=='1'?$data['delivered']=true:$data['delivered']=false;
+		$data['sales_date']= date( 'Y-m-d H:i:s', strtotime($data['sales_date']));
+		if(isset($data['due_date']))$data['due_date']= date( 'Y-m-d H:i:s', strtotime($data['due_date']));
+		if(!isset($data['warehouse_code']))$data['warehouse_code']=current_gudang();
+		if(!isset($data['ship_to_customer']))$data['ship_to_customer']=$data['sold_to_customer'];
+		if(!isset($data['salesman']))$data['salesman']='OFFICE';
+		if(!isset($data['create_date']))$data['create_date']=date( 'Y-m-d H:i:s', now());
+		if(isset($data['disc_amount_1']))$data['disc_amount_1']=c_($data['disc_amount_1']);
+		if(isset($data['tax']))$data['tax']=c_($data['tax']);
+		if(isset($data['freight']))$data['freight']=c_($data['freight']);
+		if(isset($data['other']))$data['other']=c_($data['other']);
+        if(isset($data['payment_terms'])){
+			$data['due_date']=due_date($data['sales_date'],$data['payment_terms']);
+		}
+
+
+		$ok= $this->db->insert($this->table_name,$data);
+		//return $this->db->insert_id();
+        customer_need_update($data['sold_to_customer']);
+		sales_order_need_update($data['sales_order_number']);
+
+		return $ok;
+
+	}
+	function update($id,$data){
+		$data['cid']=cid();
+		if($data['cid']=='ALL')unset($data['cid']);
+		if(isset($data['delivered'])){
+			$data['delivered']=='1'?$data['delivered']=true:$data['delivered']=false;
+		}
+		$data['sales_date']= date( 'Y-m-d H:i:s', strtotime($data['sales_date']));
+		if(isset($data['due_date'])){
+			$data['due_date']= date( 'Y-m-d H:i:s', strtotime($data['due_date']));
+		}
+        if(!isset($data['warehouse_code']))$data['warehouse_code']=current_gudang();
+		if(isset($data['tax']))$data['tax']=c_($data['tax']);
+		if(isset($data['freight']))$data['freight']=c_($data['freight']);
+		if(isset($data['other']))$data['other']=c_($data['other']);
+        if(isset($data['payment_terms'])){
+			$data['due_date']=due_date($data['sales_date'],$data['payment_terms']);
+		}
+		if(isset($data['warehouse_code'])){
+			$gudang=$data['warehouse_code'];
+			$this->db->query("update sales_order_lineitems set warehouse_code='$gudang' 
+			where sales_order_number='$id'");
+		}
+
+		$this->db->where($this->primary_key,$id);
+		$ok = $this->db->update($this->table_name,$data);
+
+		
+        customer_need_update($data['sold_to_customer']);
+		sales_order_need_update($data['sales_order_number']);
+
+		return $ok;
+
+
+	}
+	function delete($id){
+	  	$this->db->where($this->primary_key,$id);
+		$this->db->delete('sales_order_lineitems');        
+		$this->db->where($this->primary_key,$id);
+		$this->db->delete($this->table_name);
+	}
+     function add_item($id,$item,$qty){
+        $sql="select description,retail,cost,unit_of_measure
+            from inventory where item_number='".$item."'";
+        
+        $query=$this->db->query($sql);
+        $row = $query->row_array(); 
+         
+        $data = array('sales_order_number' => $id, 'item_number' => $item, 
+            'quantity' => $qty,'description'=>$row['description'],
+            'price' => $row['retail'],'amount'=>$row['retail']*$qty,
+            'unit'=>$row['unit_of_measure']
+            );
+        $str = $this->db->insert_string('sales_order_lineitems', $data);
+        $query=$this->db->query($str);
+		$this->recalc($id);
+    }
+    function del_item($line){
+        $query=$this->db->query("delete from sales_order_lineitems where line_number=".$line);
+    }  	 
+	function select_list_not_delivered(){
+       	$query=$this->db->query("select sales_order_number from sales_order where (delivered=false or delivered is null)");
+        $ret=array();$ret['']='- Select -';
+        foreach ($query->result() as $row){$ret[$row->sales_order_number]=$row->sales_order_number;}		 
+        return $ret;
+	}
+	function recalc_ship_qty($nomor_so) {
+	
+		$s="update  sales_order_lineitems 
+			left join (
+
+			select from_line_number,sum(quantity) as qty_do
+			from invoice_lineitems il
+			where from_line_doc='$nomor_so' 
+			group by from_line_number
+
+			) ip
+			on ip.from_line_number=sales_order_lineitems.line_number 
+
+			set ship_qty=qty_do 
+
+			where sales_order_lineitems.sales_order_number='$nomor_so'";
+			
+		$this->db->query($s);
+		
+		
+		$s="update sales_order_lineitems set shipped=true where quantity=ship_qty 
+		and sales_order_number='$nomor_so'";
+		$this->db->query($s);
+
+		$s="update sales_order_lineitems set shipped=false where quantity=ship_qty 
+		and sales_order_number='$nomor_so'";
+		$this->db->query($s);
+		
+		$s="select i.invoice_date from invoice i 
+		where invoice_type='D' and sales_order_number='$nomor_so'
+		order by invoice_date desc  limit 1";
+		$ship_date='1970-01-01';
+		if($q=$this->db->query($s)->row()){
+			$ship_date=$q->invoice_date;
+		}
+		$delivered=0;
+		$rstatus=$this->db->select("status")->where("sales_order_number",$nomor_so)
+			->get("sales_order")->row();
+		if($rstatus){
+			$status=$rstatus->status;
+		} else {
+			$status="0";
+		}
+		$has_item=$this->has_item($nomor_so);
+		if ($q=$this->db->select("sum(quantity) as z_qty,
+		sum(ship_qty) as z_ship_qty")->where("sales_order_number",$nomor_so)
+		->get("sales_order_lineitems")) {
+			if($r=$q->row()){
+				if($r->z_ship_qty>=$r->z_qty && $has_item){
+					$delivered=1;
+					$status="2";
+				}
+			}
+		}
+		if($status=="")$status=0;
+		$s="update sales_order set delivered='$delivered',
+		ship_date='$ship_date',status='$status' 
+		where  sales_order_number='$nomor_so'";
+		
+		$this->db->query($s);
+		
+	}
+	function has_item($nomor_so){
+		$cnt=0;
+		if($q=$this->db->query("select count(1) as cnt from sales_order_lineitems 
+			where sales_order_number='$nomor_so' ")){
+			$cnt=$q->row()->cnt;
+		}
+		return $cnt>0;
+	}
+	function nomor_bukti($add=false)
+	{
+		$key="Sales Order Numbering";
+		if($add){
+		  	$this->sysvar->autonumber_inc($key);
+		} else {			
+			$no=$this->sysvar->autonumber($key,0,'!SO~$00001');
+			for($i=0;$i<100;$i++){			
+				$no=$this->sysvar->autonumber($key,0,'!SO~$00001');
+				$rst=$this->sales_order_model->get_by_id($no)->row();
+				if($rst){
+				  	$this->sysvar->autonumber_inc($key);
+				} else {
+					break;					
+				}
+			}
+			return $no;
+		}
+	}
+	function list_so_new($d1,$d2){
+		$sql="select so.sales_order_number,so.sales_date,so.sold_to_customer,
+			c.company,sol.item_number,sol.description,sol.quantity
+			from sales_order so left join sales_order_lineitems sol 
+			on so.sales_order_number=sol.sales_order_number 
+			left join customers c on c.customer_number=so.sold_to_customer
+			where so.sales_date between '$d1' and '$d2' 
+			and (so.status is null  or so.status=0)";
+		return $this->db->query($sql);
+	}
+	function lookup($param=null){
+    	$extra_ret_func="";
+		$class="";
+    	if(isset($param["dlgRetFunc"]))$extra_ret_func=$param["dlgRetFunc"];
+		
+        $lookup = $this->list_of_values->render(array(
+        	"dlgBindId"=>"sales_order",
+        	"dlgUrlQuery"=>"sales_order/browse_data",
+       		'show_checkbox'=>false,
+       		'show_check1'=>false,'check1_title'=>"Supplier",'check1_field'=>'supplier_number',
+        	"dlgRetFunc"=>"			
+				$('#sales_order_number').val(row.sales_order_number);
+				$extra_ret_func
+				find_sales_order();
+        	",
+        	"dlgCols"=>array(
+                array("fieldname"=>"sales_order_number","caption"=>"Kode SO","width"=>"80px"),
+                array("fieldname"=>"sales_date","caption"=>"Tanggal","width"=>"180px"),
+                array("fieldname"=>"sold_to_customer","caption"=>"Cust No","width"=>"80px"),
+                array("fieldname"=>"company","caption"=>"Pelanggan","width"=>"280px"),
+                array("fieldname"=>"salesman","caption"=>"Salesman","width"=>"80px"),
+                array("fieldname"=>"amount","caption"=>"Amount","width"=>"80px"),
+                array("fieldname"=>"comments","caption"=>"Comments","width"=>"180px"),
+                array("fieldname"=>"payment_terms","caption"=>"Termin","width"=>"80px")
+			),
+			
+        ));
+		return $lookup;
+	}
+	function create_invoice_from_so($sales_order_number){
+		$success=false;
+		$this->load->model("invoice_model");
+		if($qso=$this->get_by_id($sales_order_number)){
+			if($rso=$qso->row_array()){
+				if($qinv=$this->invoice_model->get_by_id($sales_order_number)){
+					if($rinv=$qinv->row_array()){
+						$rinv['invoice_date']=$rso['sales_date'];
+						$rinv['sold_to_customer']=$rso['sold_to_customer'];
+						$rinv['ship_to_customer']=$rso['ship_to_customer'];
+						$rinv['amount']=$rso['amount'];
+						$rinv['payment_terms']=$rso['payment_terms'];
+						$rinv['salesman']=$rso['salesman'];
+						$success=$this->invoice_model->update($sales_order_number,$rinv);
+						
+					} else {
+						$rinv['invoice_date']=$rso['sales_date'];
+						$rinv['invoice_type']='I';
+						$rinv['type_of_invoice']='Simple';
+						$rinv['comments']='Auto from so massal';
+						$rinv['invoice_number']=$rso['sales_order_number'];
+						$rinv['sold_to_customer']=$rso['sold_to_customer'];
+						$rinv['ship_to_customer']=$rso['ship_to_customer'];
+						$rinv['amount']=$rso['amount'];
+						$rinv['payment_terms']=$rso['payment_terms'];
+						$rinv['salesman']=$rso['salesman'];
+						$success=$this->invoice_model->save($rinv);
+						
+					}
+				}
+			}
+		}
+		if($success){
+			$success=$this->invoice_model->save_item_so($sales_order_number,$sales_order_number);
+		}
+		
+		return $success;
+	}	
+}
