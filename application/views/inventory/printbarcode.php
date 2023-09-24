@@ -144,7 +144,7 @@ CI_BASE = "<?=base_url()?>";
             </div>
         </div> -->
 		<div class="accordion accordion-flush pt-2" id="printbarcode">
-			<div class="accordion-item">
+			<div class="accordion-item mb-3">
 				<h2 class="accordion-header" id="printbarcode1">
 					<button class="accordion-button" type="button" data-bs-toggle="collapse" data-bs-target="#collapseOne" aria-expanded="true" aria-controls="collapseOne">
 						List Barang
@@ -178,7 +178,37 @@ CI_BASE = "<?=base_url()?>";
 				<div id="collapseTwo" class="accordion-collapse collapse">
 					<div class="accordion-body">
 						<div class="row">
-							
+							<div class="col-6">
+								<div class="mb-3 row">
+									<label for="staticEmail" class="col-sm-2 col-form-label">Ukuran Label</label>
+									<div class="col-sm-10">
+										<input type="text" readonly class="form-control-plaintext" id="staticEmail" value="email@example.com">
+									</div>
+								</div> 
+								<div class="mb-3 row">
+									<label for="staticEmail" class="col-sm-2 col-form-label">Jumlah Kolom</label>
+									<div class="col-sm-10">
+										<input type="text" readonly class="form-control-plaintext" id="staticEmail" value="email@example.com">
+									</div> 
+								</div>
+								<div class="mb-3 row">
+									<label for="staticEmail" class="col-sm-2 col-form-label">Jarak Antar Kolom</label>
+									<div class="col-sm-10">
+										<input type="text" readonly class="form-control-plaintext" id="staticEmail" value="email@example.com">
+									</div> 
+								</div>
+								<div class="mb-3 row">
+									<label for="staticEmail" class="col-sm-2 col-form-label">Jarak Antar Baris</label>
+									<div class="col-sm-10">
+										<input type="text" readonly class="form-control-plaintext" id="staticEmail" value="email@example.com">
+									</div> 
+								</div>
+							</div>
+							<div class="col-6">
+								<div class="position-relative">
+
+								</div>
+							</div>
 						</div>
 					</div>
 				</div>
