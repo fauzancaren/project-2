@@ -46,6 +46,7 @@ Class Inventory extends CI_Controller {
                 left join inventory_prices ip on ip.item_number=i.item_number
                 ";
     	$this->load->model("replicate_model");
+        $this->load->model('inventory/M_dt_inventory', 'm_inventory');
 		
 	}
 	function set_defaults($record=NULL){          
@@ -1583,6 +1584,10 @@ Class Inventory extends CI_Controller {
 		$data['caption']="IMPORT DATA MASTER";
 		$this->template->display("inventory/import_master",$data);
 	}
+	function barcode(){
+		$data['caption']="Print Barcode Multi Data";
+		$this->template->display("inventory/barcode_all",$data);
+	}
 	function saldo_stock()
 	{
 		if($data=$this->input->get())
@@ -2089,6 +2094,7 @@ Class Inventory extends CI_Controller {
         }
         echo json_encode($data);
     }    
+
 	function checkharga(){
 		if(!$this->access->is_login()){
 			$this->load->view("login_cekharga");
@@ -2100,17 +2106,87 @@ Class Inventory extends CI_Controller {
 		$this->access->logout();
 		$this->load->view("login_cekharga");
 	}
-function login($cmd){
-    $submit_value=$this->input->post("submit");
-   $this->form_validation->set_rules('password', 'Password', 'trim|required|callback_check_database');
-   if($this->form_validation->run() && $this->session->userdata("logged_in")) {
-		header("location:".base_url()."index.php/inventory/checkharga");
-   } else {
-		$data["message"]="UserID atau Password salah !";			
-		$data['multi_company']=$this->config->item('multi_company');
-		$this->load->view("login_cekharga",$data);
-   }
-}
+
+	function printbarcode(){
+		if(!$this->access->is_login()){
+			$this->load->view("login_barcode");
+		} else {
+			$this->load->view("inventory/printbarcode");
+		}
+	}
+	function printbarcode_logout(){
+		$this->access->logout();
+		$this->load->view("login_barcode");
+	}
+
+	function printbarcode_search(){
+		if(!$this->access->is_login()){
+			$output = array(
+				"draw" => [],
+				"recordsTotal" => 0,
+				"recordsFiltered" => 0,
+				"data" => [],
+			 );
+			echo json_encode($output);
+		} else {
+			// SETUP DATATABLE
+			// $this->m_inventory->table = 'TblAbsen';
+			// $this->m_inventory->tablejoin = array(
+			//    array(0 => 'TblMsWorkplace', 1 => 'TblAbsen.MsWorkplaceId=TblMsWorkplace.MsWorkplaceId'),
+			// );
+			// $this->m_inventory->column_order = array(null, 'TblAbsen.MsEmpCode', 'TblAbsen.MsEmpName', 'TblAbsen.AbsenDate', 'TblAbsen.AbsenTime', 'MsWorkplaceCode', 'TblAbsen.System'); //set column field database for datatable orderable
+			// $this->m_inventory->column_search = array('MsEmpCode', 'MsEmpName', 'AbsenDate', 'AbsenTime', 'MsWorkplaceCode', 'System'); //set column field database for datatable searchable 
+			// $this->m_inventory->order = array('TblAbsen.MsWorkplaceId' => 'asc'); // default order 
+	  
+			// PROSES DATA
+			$list = $this->m_inventory->get_datatables();
+			$data = array();
+			$no = $_POST['start'];
+			foreach ($list as $master) {
+			   $no++;
+			   $row = array(); 
+			   $row[] = $master->item_number;
+			   $row[] = $master->description;
+			   $row[] = $master->category;  
+			   $data[] = $row;
+			}
+			$output = array(
+			   "draw" => $_POST['draw'],
+			   "recordsTotal" => $this->m_inventory->count_all(),
+			   "recordsFiltered" => $this->m_inventory->count_filtered(),
+			   "data" => $data,
+			);
+			//output to json format
+			echo json_encode($output);
+		}
+	} 
+
+	function get_data_absen()
+	{
+	   
+	}
+	function login($cmd){
+		$submit_value=$this->input->post("submit");
+		$this->form_validation->set_rules('password', 'Password', 'trim|required|callback_check_database');
+		if($this->form_validation->run() && $this->session->userdata("logged_in")) {
+			if($cmd =="verify")
+				header("location:".base_url()."index.php/inventory/checkharga");
+			if($cmd =="verify1")
+				header("location:".base_url()."index.php/inventory/printbarcode");
+		} else {
+			if($cmd =="verify"){ 
+				$data["message"]="UserID atau Password salah !";			
+				$data['multi_company']=$this->config->item('multi_company');
+				$this->load->view("login_cekharga",$data);
+			}
+			if($cmd =="verify1"){ 
+				$data["message"]="UserID atau Password salah !";			
+				$data['multi_company']=$this->config->item('multi_company');
+				$this->load->view("login_barcode",$data);
+			}
+			
+		}
+	}
  function check_database($password)  {
 	 $this->load->model("user");
    $password=urldecode($password);
