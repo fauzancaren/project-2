@@ -538,35 +538,16 @@
 								</div>
 							</div> 
 						</div> 
-						<div class="row mt-4" id="media-print"> 
-							<table > 
-								<tr>
-									<td>
-										<table style="background: white;  border-radius: 5px; padding: 2px; text-align: center;margin-right:10mm;height: 15mm; width: 33mm; font-size: 12px;">
-											<tr>
-												<td>
-													<img src="http://localhost:80/software.jobii.id/barcode.php?codetype=code128a&amp;size=30&amp;text=5758002040001&amp;print=false" alt="" style="width: 100%;height: 70%;padding-top: 5%;">
-												</td>
-											</tr>
-											<tr>
-												<td>
-													<span>5758002040001</span>
-												</td>
-											</tr>
-										</table>
-									</td>
-									<td>Contact</td>
-									<td>Country</td>
-								</tr>
-							</table>
-							<div id="preview" class="card bg-opacity-25 bg-secondary"> 
-
-							</div> 
+						<div class="row mt-4 print-preview"> 
+							<h4>Print Preview</h4> 
+							<div class="pb-2" style="display: block;background: gainsboro;" id="preview">  
+								
+							</div>
 						</div>
 					</div>
 				</div>
 			</div>  
-		</div>	
+		</div>	 
 	</div> 
 	<!-- Modal -->
 	<div class="modal fade" id="staticBackdrop" data-bs-backdrop="static" data-bs-keyboard="false" tabindex="-1" aria-labelledby="staticBackdropLabel" aria-hidden="true">
@@ -746,59 +727,101 @@
 		$("#print-margin-samping").change(function(){ 
 			$(".ukuran-samping").html($("#print-margin-samping").val())
 		}); 
-		$("#btn-preview").click(function(){
+		const getBase64FromUrl = async (url) => {
+			const data = await fetch(url);
+			const blob = await data.blob();
+			return new Promise((resolve) => {
+				const reader = new FileReader();
+				reader.readAsDataURL(blob); 
+				reader.onloadend = () => {
+				const base64data = reader.result;   
+				resolve(base64data);
+				}
+			});
+		}
+		async function create_page_view(){
 			let json_label = [];
 			$("#preview").html("");
-			if(tbllist.rows().data().length == 0) {
-				alert("masukan item barang terlebih dahulu");
-				return false;
-			} 
 			var f = tbllist.rows().data();
 			for(var i=0 ; f.length>i;i++){ 
 				let jumlah_print = $("#" + f[i][0] + " input").val();
 				for(var j=0 ;jumlah_print>j;j++){ 
 					json_label.push(f[i][0]); 
 				} 
-			}  
-			//http://localhost/software.jobii.id/
-			function url_barcode ($number){ 
-				return "<?= base_url() ?>barcode.php?codetype=code128a&size=30&text=" + $number + "&print=false";
+			}   
+			async function url_barcode ($number){ 
+				let url = "<?= base_url() ?>barcode.php?codetype=code128a&size=30&text=" + $number + "&print=false";
+				let base64 = await getBase64FromUrl(url);
+				return base64; 
 			}
 			console.log(json_label);
 
 			// Ukuran Label;
 			let class_label = "";
-			if($("#print-ukuran").val() == 0) class_label = "height:15mm;width:33mm;font-size:12px;"; 
-			if($("#print-ukuran").val() == 1) class_label = "height:20mm;width:40mm;font-size:14px;";
-			if($("#print-ukuran").val() == 2) class_label = "height:30mm;width:50mm;font-size:16px;";
+			let barcode = "";
+			if($("#print-ukuran").val() == 0) {
+				class_label = "height:15mm;width:33mm;font-size:12px;"; 
+				barcode = "width: 30mm;margin-left: 1.5mm;height: 8mm;margin-top: 1mm;";
+			}
+			if($("#print-ukuran").val() == 1) {
+				class_label = "height:20mm;width:40mm;font-size:14px;";
+				barcode = "width: 37mm;margin-left: 1.5mm;height: 13mm;margin-top: 1mm;";
+			}
+			if($("#print-ukuran").val() == 2) {
+				class_label = "height:30mm;width:50mm;font-size:16px;";
+				barcode = "width: 47mm;margin-left: 1.5mm;height: 18mm;margin-top: 1mm;";
+			}
 
 
 			let jml_baris = Math.ceil(json_label.length / $("#print-kolom").val());
 			let json_index = 0;
-			let html_create = "";
+			let html_create = `<table style="margin-top: ${$("#print-margin-atas").val()}mm;margin-left: ${$("#print-margin-samping").val()}mm;display: inline-block"><tbody>`;
 			for(var i=0; jml_baris>i;i++){ // looping baris
 				let idx = $("#print-kolom").val() * i;
-				html_create += '<div style="display:flex;margin-bottom:'+ $("#print-jarak-baris").val() +'mm">'; 
+				html_create += '<tr>'; 
 				for(var j=0; $("#print-kolom").val()>j;j++){ //looping kolom dari baris
 					let idx_next = idx + j;
-					if(json_label.length > idx_next) 
-						html_create += '<div style="display: flex; flex-direction: column; background: white;  border-radius: 5px; padding: 2px; text-align: center;margin-right:'+ $("#print-jarak-kolom").val() +'mm;'+ class_label+'" ><img src="'+ url_barcode(json_label[idx + j])+'" alt="" style="width: 100%;height: 70%;padding-top: 5%;"><span>' + json_label[idx + j] + '</span></div>';
+					if(json_label.length > idx_next){
+						html_create += `
+						<td style="padding-left:${(j==0?"0":$("#print-jarak-kolom").val())}mm;padding-bottom:${((jml_baris-1)==i?"0":$("#print-jarak-baris").val())}mm">
+							<table style='background: white; ${class_label}border-radius: 5px; '>
+								<tbody>
+									<tr><td><img src="${await url_barcode(json_label[idx + j])}" alt="" style="${barcode}"></td></tr>
+									<tr><td><div style="text-align: center; ">${json_label[idx + j]}</div></td></tr>
+								</tbody>
+							</table> 
+						</td>`;
+					}  
 				}
-				html_create += '</div>';
+				html_create += '</tr>';
 			} 
-			$("#preview").html(html_create);
-			$("#preview").css("padding-top",$("#print-margin-atas").val() + "mm");
-			$("#preview").css("padding-left",$("#print-margin-samping").val() + "mm");
+			$("#preview").html(html_create); 
+		}
+
+		$(".print-preview").hide();
+		$("#btn-preview").click(async function(){ 
+			if(tbllist.rows().data().length == 0) {
+				alert("masukan item barang terlebih dahulu");
+				return false;
+			} 
+			await create_page_view();
+			$(".print-preview").show();
 		});
-		$("#btn-print").click(function(){ 
-			var divContents = document.getElementById("media-print").innerHTML;
-			var a = window.open('', '', 'height=500, width=500');
-			a.document.write('<html>');
-			a.document.write('<body > <h1>Div contents are <br>');
-			a.document.write(divContents);
-			a.document.write('</body></html>');
-			a.document.close();
-			a.print(); 
+		$("#btn-print").click(async function(){  
+			
+			if(tbllist.rows().data().length == 0) {
+				alert("masukan item barang terlebih dahulu");
+				return false;
+			} 
+			await create_page_view();
+			$(".print-preview").hide();
+			var prtContent = document.getElementById("preview");
+			var WinPrint = window.open('', '', 'left=0,top=0,width=800,height=900,toolbar=0,scrollbars=0,status=0');
+			WinPrint.document.write(prtContent.innerHTML);
+			WinPrint.document.close();
+			WinPrint.focus();
+			WinPrint.print();
+			WinPrint.close();
 		})
 	</script>
     <!-- </body> -->

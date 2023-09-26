@@ -74,9 +74,9 @@ defined('BASEPATH') OR exit('No direct script access allowed');
 $db["simak"] = array(
     'dsn'   => '',
     'hostname' => 'localhost',
-    'username' => 'server',
-    'password' => 'Admin1234',
-    'database' => "jobii",
+    'username' => 'root',
+    'password' => '',
+    'database' => "obisoft",
     'dbdriver' => 'mysqli',
     'dbprefix' => '',
     'pconnect' => false,
